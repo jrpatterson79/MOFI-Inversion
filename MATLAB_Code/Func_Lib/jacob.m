@@ -1,20 +1,19 @@
-% FSR^2
-% Jacobian approximation
-% December 2020
-% Jeremy Patterson
-
-%This function calculates the parameter sensitivity matrix (i.e. Jacobian) of the finite difference based heat
-%equation forward model.
-%
-%     Inputs
-%
-%
-%     Outputs
-%
-%   [J] numdata x numparam sensitivity matrix 
-
-
 function [J] = jacob(p, delta, test_list, soln)
+
+% jacob: This function computes the Jacobian (i.e., sensitivity matrix) for T and S (confined analysis) or T, S, and L (leaky analysis) using the analytical solutions developed % by Rasmussen et al., (2013). The Jacobian is then used in linearized error propagation to quantify the uncertainty of estimated aquifer parameters. 
+%
+% Inputs:
+%   p - (num_param x 1) is the vector of aquifer parameters
+%   delta - (num_param x 1) is the small incremental value by which parameters are changed to determine parameter sensitivity
+%   test_list - (num_obs x 4) is the list of all pumping tests being analyzed. The columns of the matrix are:
+                [Period AngularFrequency(omega) Q_max r]
+%   soln - Is a string that tells which analytical solution is being used. Should be 'confined' or 'leaky'
+%
+% Outputs:  
+%   J - (numdata x numparam) Jacobian (i.e., sensitivity matrix) 
+% Code by Jeremy Patterson 12/2020, Last Updated: 08/2021
+
+
 
 % Modeled temperature value with unchanged parameters
 [coeffs_base] = RasSoln(test_list, p, soln);

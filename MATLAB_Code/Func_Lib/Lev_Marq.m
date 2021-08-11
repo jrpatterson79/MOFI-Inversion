@@ -5,6 +5,7 @@
 %Levenberg-Marquardt optimization algorithm.
 
 function varargout = Lev_Marq(test_list, s, y, R_inv, lambda_init, delta, soln)
+% Lev_Marq: This function conducts non-linear gradient inversion using the Levenberg-Marquardt algorithm. The inversion uses analytical solutions developed by Rasmussen et al., % (2003) as the forward model to determine optimal flow parameters. 
 
 % Forward Model
 h = @(s) RasSoln(test_list, s, soln);
