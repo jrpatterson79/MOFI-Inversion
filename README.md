@@ -1,7 +1,7 @@
 # MOFI-Inversion
 
 ## Overview
-This is the code bank used to generate the analysis in Patterson and Cardiff, (2021) *Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights*. At a high level this code generates synthetic data for single frequency or multi-frequency oscillatory flow interference tests using analytical solutions developed by Rasmussen et al., (2003). It then uses a gradient-based inversion strategy to quantify aquifer transmissivity, storativity, and leakance.
+This is the code bank used to generate the analysis in Patterson and Cardiff, (2021) *Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights*. At a high level this code generates synthetic data for single frequency or multi-frequency oscillatory flow interference tests using analytical solutions developed by Rasmussen et al., (2003). It then uses a gradient-based inversion strategy to quantify aquifer transmissivity, storativity, and leakance and their associated uncertainty.
 
 The analysis presented in this paper was generated using code developed and run in MATLAB 2019b. This repository contains the MATLAB with plans to incrementally translate translate to Python as time and my dissertation allows.
 
