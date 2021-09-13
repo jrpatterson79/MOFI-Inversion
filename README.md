@@ -1,7 +1,9 @@
 # MOFI-Inversion
 
 ## Overview
-This is the code bank used to generate the analysis in Patterson and Cardiff, (2021) *Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights*. At a high level this code generates synthetic data for single frequency or multi-frequency oscillatory flow interference tests using analytical solutions developed by Rasmussen et al., (2003). It then uses a gradient-based inversion strategy to quantify aquifer transmissivity, storativity, and leakance and their associated uncertainty.
+This code in this repository is used to generate the analysis in Patterson and Cardiff, (2021) *Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights*. At a high level this code generates synthetic data for single frequency or multi-frequency oscillatory flow interference tests using analytical solutions developed by Rasmussen et al., (2003). It then uses a gradient-based inversion strategy to quantify aquifer transmissivity, storativity, and leakance and their associated uncertainty.
+
+The code is provided as open source under 
 
 The analysis presented in this paper was generated using code developed and run in MATLAB 2019b. This repository contains the MATLAB with plans to incrementally translate translate to Python as time and my dissertation allows.
 
@@ -15,6 +17,6 @@ The analysis presented in this paper was generated using code developed and run 
 This section is currently less than barebones. I am incrementally translating the contents of the MATLAB Func_Lib subdirectory here as time allows.
 
 ## References
-Patterson, J. R., M. A. Cardiff. 2021. Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights. Groundwater, Under Review
+Patterson, J. R., M. A. Cardiff. 2021. Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights. Groundwater, doi:10.1111/gwat.13134
 
 Rasmussen, T. C., K. G. Haborak, and M. H. Young. 2003. Estimating aquifer hydraulic properties using sinusoidal pumping at the Savannah River site, South Carolina, USA. Hydrogeology Journal 11, no. 4: 466–82, https://doi.org/10.1007/s10040-003-0255-7

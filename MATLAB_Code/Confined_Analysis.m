@@ -1,21 +1,15 @@
-% Fully Confined Conceptual Model
-% Single and Multiple Frequency Analysis
-% Jeremy Patterson
-% May 2021
+% Fully confined aquifer single and multiple frequency analysis presented in:
+% Patterson, J.R.; Cardiff, M.A.; Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights; Groundwater; 2021; doi:10.1111/gwat.13134
+% Code by Jeremy Patterson 12/2020, Last Updated 09/2021
+
 
 %% Clean Environment
 close all; clear; clc
 
 %% Specify Directory
-% Home Computer
-print_dir = '/Users/jpatt/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Figures/';
-addpath('/Users/jpatt/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Supplemental_Materials/Analysis_Code/Func_Lib')
-
-% School Computer
-% print_dir = '/Users/jpatterson7/Documents/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Figures/';
-% addpath('/Users/jpatterson7/Documents/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Supplemental_Materials/Analysis_Code/Func_Lib/')
-
-%% Build Model
+% Set to automatically determine present working directory and add the subdirectory with all of the necessary function files. Change as necessary to suit your needs.
+dir = pwd;
+addpath([dir '/Func_Lib'])
 
 % Seed the random number generators
 randn('state', 0); % Data error noise seed
