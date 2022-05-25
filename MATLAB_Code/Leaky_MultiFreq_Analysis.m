@@ -1,22 +1,20 @@
-% Multi-Frequency Analysis
-% Leaky Conceptual Model
-% Jeremy Patterson
-% May 2021
+% Multi-Frequency Analysis Leaky Conceptual Model (Patterson and Cardiff, 2022)
+% Code developed by Jeremy Patterson
+% Created Dec 2020; Updated May 2021
+
+% This code generates the multi-frequency analysis seen in the section "Leaky Aquifer System" (Patterson and Cardiff, 2022)
+% Patterson, J. R., & Cardiff, M. (2022). Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights. Groundwater, 60(2),
+% 180–191. https://doi.org/10.1111/gwat.13134
+
 
 %% Clean Environment
 close all; clear; clc
 
 %% Specify Directory
-% Home Computer
-print_dir = '/Users/jpatt/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Figures/';
-addpath('/Users/jpatt/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Supplemental_Materials/Analysis_Code/Func_Lib/')
-
-% Work Computer 
-% print_dir = '/Users/jpatterson7/Documents/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Figures/';
-% addpath('/Users/jpatterson7/Documents/Google Drive/PhD_Shared/Patterson_Workspace/Drafts/Patterson_Cardiff_2021_Groundwater/Supplemental_Materials/Analysis_Code/Func_Lib/')
+% Specify the directory location of the folder Func_Lib, which contains the needed function files to execute this code
+addpath('/.../.../') 
 
 %% Create Synthetic Data
-
 % Seed the random number generators
 randn('state', 0); % Data noise
 normrnd('state', 0); % Seed for multi-freq stochastic sampling
@@ -230,7 +228,6 @@ xlabel('Time (min)')
 ylabel('\sigma ln(L [s^{-1}])')
 legend show
 ax.FontSize = 18;
-
 end
 set(gcf, 'Position', [0 0 1900 500])
 

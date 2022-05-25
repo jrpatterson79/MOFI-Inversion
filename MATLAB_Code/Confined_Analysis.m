@@ -1,6 +1,6 @@
 % Fully confined aquifer single and multiple frequency analysis presented in:
 % Patterson, J.R.; Cardiff, M.A.; Aquifer Characterization and Uncertainty in Multi-Frequency Oscillatory Flow Tests: Approach and Insights; Groundwater; 2021; doi:10.1111/gwat.13134
-% Code by Jeremy Patterson 12/2020, Last Updated 09/2021
+% Code by Jeremy Patterson 12/2020, Last Updated 12/2021
 
 
 %% Clean Environment
@@ -13,7 +13,6 @@ addpath([dir '/Func_Lib'])
 
 % Seed the random number generators
 randn('state', 0); % Data error noise seed
-normrnd('state', 0); % Seed for multi-freq stochastic sampling
 
 % Specify Model Type
 soln = 'confined';
@@ -87,7 +86,7 @@ R_inv = inv(blkdiag(data_cov{1:end}));
 % Conduct Inversion
 % Define objective function
 obj_fxn = @(s) (1/2) * (y_true - y_mod(s))' * R_inv * (y_true - y_mod(s));
-[s_opt{w}, ~] = Lev_Marq(synth_data, s_init, y_noise, R_inv, lambda, delta, soln);
+[s_opt{w}, s_step] = Lev_Marq(synth_data, s_init, y_noise, R_inv, lambda, delta, soln);
 misfit{w} = y_true - y_mod(s_opt{w});
 opt_norm{w} = obj_fxn(s_opt{w});
 
@@ -95,6 +94,7 @@ opt_norm{w} = obj_fxn(s_opt{w});
 J = jacob(s_opt{w}, delta, synth_data, soln);
 param_cov = inv(J' * R_inv * J);
 param_sd = 1.96 * sqrt(diag(param_cov));
+diff_sd = [1 -1] * param_cov * [1; -1];
 param_CI = [s_opt{w}-param_sd s_opt{w}+param_sd];
 
 % Chi^2 error ellipse
@@ -153,18 +153,54 @@ end
 y_sens = RasSoln(test_list, [T_true; S_true], soln);
 phasor_sens = [y_sens(1:2:end-1) y_sens(2:2:end)];
 [time_r_sens{w}, T_unc_r_sens{w}, S_unc_r_sens{w}] = SigLenUnc(test_list, phasor_sens, [T_true-1; S_true-1], dt, t_max, data_err, lambda, delta, soln);
-
 end
 
-%% Figures
-
-% Parameter Uncertainty 
+%% Figures 
 col = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250],...
        [0.4940 0.1840 0.5560], [0.4660 0.6740 0.1880], [0.6350 0.0780 0.1840]};
 mkr = {'v', 'd', '^', 's', '>', 'o'};
 leg = {'P = 30 s', 'P = 90 s', 'P = 180 s',...
        'P = 30 s & 90 s', 'P = 30 s & 180 s', 'P = 30 s, 90 s, & 180 s'};
 
+   
+figure
+clf
+ax = gca;
+hold on
+contour(T, S, log10(mod_err{w}), 20, 'LineWidth', 2);
+p1 = plot(s_step(:,1), s_step(:,2), 'k-^', 'MarkerSize', 10, 'LineWidth', 2, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980]);
+axis([-15 -4 -15 -8])
+ax.XTick = [min(T_vec):2:-4];
+grid on
+xlabel('ln(T [m^2/s])')
+ylabel('ln(S [-])')
+ax.FontSize = 18;
+c = colorbar;
+caxis([0 14])
+c.Ticks = [0:2:14];
+c.Label.String = 'log_{10}(Data Misfit)';
+c.FontSize = 18;
+l = legend([p1], 'Gradient Step');
+l.FontSize = 18;
+set(gcf, 'Position', [100 100 800 600])
+
+figure
+clf
+ax = gca;
+hold on
+contour(T, S, log10(mod_err{w}), 20, 'LineWidth', 2);
+p1 = plot(T_true, S_true, 'kd', 'MarkerSize', 10, 'MarkerFaceColor', [0.4660, 0.6740, 0.1880], 'LineWidth', 2);
+p2 = plot(s_opt{w}(1), s_opt{w}(2), 'k^', 'LineWidth', 2,...
+    'MarkerSize', 12, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980]);
+p3 = plot(err_ell{w}(:,1), err_ell{w}(:,2), '--', 'Color', [0.6350, 0.0780, 0.1840], 'LineWidth', 2);
+axis([T_true-0.5 T_true+0.5 S_true-0.5 S_true+0.5])
+grid on
+xlabel('ln(T [m^2/s])')
+ylabel('ln(S [-])')
+ax.FontSize = 18;
+legend([p1, p2, p3], 'params_{true}', 'params_{opt}', 'params_{unc}')
+set(gcf, 'Position', [100 100 800 600])
+   
 % Figure 2
 figure(2)
 clf
