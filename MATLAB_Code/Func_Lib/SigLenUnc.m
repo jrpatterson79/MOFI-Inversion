@@ -1,6 +1,8 @@
 function varargout = SigLenUnc(test_list, y, s, dt, t_max, data_err, lambda, delta, soln)
 
-num_obs = numel(test_list(:,1));
+
+
+    num_obs = numel(test_list(:,1));
 iter = 1;
 t_total = 0;
 signal_length = 2;
@@ -13,7 +15,7 @@ while t_total < t_max
         % Generates noisy signal using Gaussian noise under i.i.d. assumption
         t = [0 : dt : t_new]';
         sig = (y(k,1) .* cos(test_list(k,2) .* t)) +...
-              (-y(k,2) .* sin(test_list(k,2) .* t));
+             (-y(k,2) .* sin(test_list(k,2) .* t));
         noise = data_err .* randn(size(t));
         sig_noise = sig + noise;
         
@@ -34,7 +36,7 @@ while t_total < t_max
 
     % Linearized Uncertainty Analysis
     J = jacob(s_hat(iter,:), delta, test_list, soln);
-    param_cov = inv(J' * R_inv * J); % Parameter Covariance Matrix
+    param_cov = inv(J' * R_inv * J);                     % Parameter Covariance Matrix
     param_stddev(iter,:) = 1.96 * sqrt(diag(param_cov)); % Parameter Standard Deviation
     
     t_save(iter,:) = t_curr;
@@ -48,5 +50,5 @@ if strcmp(soln, 'confined') == 1
 elseif strcmp(soln, 'leaky') == 1
     varargout = {t_save, param_stddev(:,1), param_stddev(:,2), param_stddev(:,3), s_hat};
 else
-    error('Pick a valid solution')
+    error('Pick a valid analytical solution (confined or leaky)')
 end

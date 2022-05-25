@@ -1,6 +1,6 @@
 function [J] = jacob(p, delta, test_list, soln)
 
-% jacob: This function computes the Jacobian (i.e., parameter sensitivity) matrix for T and S (confined analysis) or T, S, and L (leaky analysis) using the analytical solutions developed % by Rasmussen et al., (2013). The Jacobian is then used in linearized error propagation to quantify the uncertainty of estimated aquifer parameters. 
+% jacob: This function computes the Jacobian (i.e., parameter sensitivity) matrix for T and S (confined analysis) or T, S, and L (leaky analysis) using the analytical solutions % developed by Rasmussen et al., (2013). The Jacobian is then used in linearized error propagation to quantify the uncertainty of estimated aquifer parameters. 
 %
 % Inputs:
 %   p - (num_param x 1) is the vector of aquifer parameters
@@ -11,18 +11,18 @@ function [J] = jacob(p, delta, test_list, soln)
 %
 % Outputs:  
 %   J - (numdata x numparam) Jacobian (i.e., parameter sensitivity) matrix 
-% Code by Jeremy Patterson 12/2020, Last Updated: 08/2021
 
+% Code by Jeremy Patterson
+% Created Dec 2020; Updated May 2022
 
-
-% Modeled temperature value with unchanged parameters
+% Modeled phasors with unchanged parameters
 [coeffs_base] = RasSoln(test_list, p, soln);
     
 for i = 1 : numel(p)
     pj = p; 
     pj(i) = p(i) + delta(i);
     
-    % Modeled Fourier coefficients with perturbed parameters
+    % Modeled phasors with perturbed parameters
     [coeffs_mod] = RasSoln(test_list, pj, soln); 
     
     J(:,i) = (coeffs_mod - coeffs_base) ./ delta(i);   
