@@ -59,7 +59,7 @@ y_true = y_mod([T_true; S_true; L_true]);
 
 %% Parameter Space Search
 dt = 1/8; % Sampling frequency
-data_err = sqrt(1e-4); % Observation signal noise variance (Assumes 1 cm data measurement error)
+data_err = 1e-4; % Observation signal noise variance (Assumes 1 cm data measurement error)
 
 % Generates noisy signal using Gaussian noise under i.i.d. assumption
 phasor = [y_true(1:2:end-1) y_true(2:2:end)];

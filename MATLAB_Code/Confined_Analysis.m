@@ -35,7 +35,7 @@ Q_max = 7e-5;
 
 % Sampling Frequency
 dt = 1/8;
-data_err = sqrt(1e-4); % Data error variance (Assumes 1 cm data measurement error)
+data_err = 1e-4; % Data error variance (Assumes 1 cm data measurement error)
 
 % LM Inversion Inital Parameters
 delta = [0.1 0.1];
@@ -133,7 +133,7 @@ t_max = 60*60; % Total test time in seconds
 [time_tot{w}, T_stddev{w}, S_stddev{w}] = SigLenUnc(synth_data, phasor, [T_true-1; S_true-1], dt, t_max, data_err, lambda, delta, soln);
 
 % Data Error Uncertainty
-data_err_sens = sqrt(2.5e-5); % Assumes 5 mm data measurement error
+data_err_sens = 2.5e-5; % Assumes 5 mm data measurement error
 [time_data_sens{w}, T_unc_data_sens{w}, S_unc_data_sens{w}] = SigLenUnc(synth_data, phasor, [T_true-1; S_true-1], dt, t_max, data_err_sens, lambda, delta, soln);
 
 % Temporal Sampling Resolution Uncertainty Sensitivity

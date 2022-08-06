@@ -60,7 +60,9 @@ def LevMarq(P, Q_max, r, s_ln, delta, lam, y, soln):
     obj_fxn = lambda s: (1/2) * np.linalg.multi_dot([(h(s)-y).T, R_inv, (h(s)-y)])
 
     while iter < iter_max:
-        y_curr = h(s)
+        print('Iteration', iter)
+        print('Lambda = ', lam)
+        y_curr = h(s_curr)
 
         J = jacobian(P, Q_max, r, s_curr, delta, soln)
         lhs = -np.dot(J.T, J) + (lam * np.eye(s_ln.size)) 
@@ -78,7 +80,7 @@ def LevMarq(P, Q_max, r, s_ln, delta, lam, y, soln):
 
         if obj_change <= obj_close and s_change <= s_close:
             return s_curr
-        
+
         else:
             if obj_new < obj_curr:
                 s_curr = s_new;
@@ -97,3 +99,8 @@ def LevMarq(P, Q_max, r, s_ln, delta, lam, y, soln):
                     lam = lam * 1e1
 
                 iter = iter + 1
+            
+
+    s_hat = s_curr
+    out_flag = 0
+    
