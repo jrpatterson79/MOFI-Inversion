@@ -35,7 +35,7 @@ Q_max = 7e-5;
 
 % Sampling Frequency
 dt = 1/8;
-data_err = 1e-4; % Data error variance (Assumes 1 cm data measurement error)
+data_err = 1e-2; % Data error std dev (Assumes 1 cm data measurement error)
 
 % LM Inversion Inital Parameters
 delta = [0.1 0.1];
