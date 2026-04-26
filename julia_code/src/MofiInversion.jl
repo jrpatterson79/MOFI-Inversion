@@ -29,24 +29,33 @@ module MofiInversion
     include("models/aquifer_models.jl")
     include("models/forward_model.jl")
 
+        # Signal Processing
+    include("signal_processing/periodic_ls_fit.jl")
+    include("signal_processing/sig_len_unc.jl")
+
     # Inversion
     include("inversion/sens_mat.jl")
     include("inversion/grad_inv_lm.jl")
-
-    # Signal Processing
-    include("signal_processing/periodic_ls_fit.jl")
-    include("signal_processing/sig_len_unc.jl")
 
     # Analysis
     include("uncertainty.jl")
     include("parameter_space.jl")
 
     # Public API — internal helpers (e.g. _pack_phasors) are intentionally excluded
-    export ConfinedAquifer, LeakyAquifer,
-           param_names, num_params,
-           rasmussen_phasor,
-           InversionResult, sens_mat, grad_inv_lm,
-           LsFitResult, periodic_ls_fit, sig_len_unc,
-           UncertaintyResult, confidence_region,
-           parameter_space_search
+    export  # Models
+        ConfinedAquifer, LeakyAquifer,
+        param_names, num_params,
+        # Forward Model
+        rasmussen_phasor,
+        # Inversion
+        InversionResult, grad_inv_lm,
+        sens_mat,
+        # Signal Processing
+        LsFitResult, 
+        periodic_ls_fit, sig_len_unc,
+        # Uncertainty
+        UncertaintyResult,
+        param_uncertainty, confidence_region,
+        # Parameter Space
+        parameter_space_search
 end
