@@ -1,3 +1,8 @@
+# sens_mat.jl
+# Computes the parameter sensitivity (Jacobian) matrix via forward finite
+# differences. Model-agnostic: operates on any forward model function that
+# maps a parameter vector to a data vector.
+
 function sens_mat(s::Vector{Float64}, δ::Vector{Float64}, fwd_model_func::Function)
     base_vals  = fwd_model_func(s)
     num_data   = length(base_vals)

@@ -16,8 +16,8 @@ LM inversion, and computing linearized uncertainty at each step until `t_max`
 is reached.
 
 # Arguments
-- `test_list`:  (num_obs × 4) matrix [Period(s), ω(rad/s), Q_max(m³/s), r(m)]
-- `y`:          (num_obs × 2) true phasor coefficients [real imag] (no noise)
+- `test_list`:  (num_obs x 4) matrix [Period(s), ω(rad/s), Q_max(m³/s), r(m)]
+- `y`:          (num_obs x 2) true phasor coefficients [real imag] (no noise)
 - `s_init`:     (num_params,) initial parameter guess for inversion (log-space)
 - `dt`:         sampling interval [s]
 - `t_max`:      maximum total test duration [s]

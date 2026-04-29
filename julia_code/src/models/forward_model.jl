@@ -1,4 +1,15 @@
 # forward_model.jl
+# Steady-periodic analytical forward model for oscillatory pumping tests.
+# Computes complex phasor head response at an observation well using the
+# Rasmussen et al. (2003) solution for confined and leaky aquifer conditions.
+#
+# Dispatch on AquiferModel type routes to the appropriate formulation —
+# ConfinedAquifer uses hydraulic diffusivity only, LeakyAquifer adds a
+# leakage term to the Bessel function argument.
+#
+# Reference:
+#   Rasmussen, T.C., et al. (2003). Applying Oscillatory Flow to Determine
+#   Aquifer Characteristics. Vadose Zone Journal, 2(4), 514-521.
 
 using SpecialFunctions: besselk
 

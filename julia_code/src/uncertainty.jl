@@ -42,7 +42,6 @@ function param_uncertainty(
     param_sd  = 1.96 .* sqrt.(diag(param_cov))
     param_CI  = [s_opt .- param_sd  s_opt .+ param_sd]
 
-    region    = confidence_region(param_cov, s_opt, model)
     return UncertaintyResult(param_cov, param_sd, param_CI, region)
 end
 

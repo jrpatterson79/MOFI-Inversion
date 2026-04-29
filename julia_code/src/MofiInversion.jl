@@ -54,7 +54,7 @@ module MofiInversion
         LsFitResult, 
         periodic_ls_fit, sig_len_unc,
         # Uncertainty
-        UncertaintyResult,
+        ConfidenceRegion, UncertaintyResult,
         param_uncertainty, confidence_region,
         # Parameter Space
         parameter_space_search
