@@ -28,14 +28,13 @@ struct UncertaintyResult
     param_cov :: Matrix{Float64}
     param_sd  :: Vector{Float64}
     param_CI  :: Matrix{Float64}
-    region    :: ConfidenceRegion
 end
 
 function param_uncertainty(
-    s_opt  :: Vector{Float64},
-    δ      :: Vector{Float64},
+    s_opt    :: Vector{Float64},
+    δ        :: Vector{Float64},
     fwd_func :: Function,
-    R_inv  :: Matrix{Float64}
+    R_inv    :: Matrix{Float64}
 )
     J         = sens_mat(s_opt, δ, fwd_func)
     param_cov = inv(J' * R_inv * J)

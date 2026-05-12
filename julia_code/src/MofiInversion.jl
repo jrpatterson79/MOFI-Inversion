@@ -22,7 +22,6 @@
 
 
 module MofiInversion
-    # LinearAlgebra is the only truly cross-cutting dependency
     using LinearAlgebra
 
     # Models
@@ -48,8 +47,8 @@ module MofiInversion
         # Forward Model
         rasmussen_phasor,
         # Inversion
-        InversionResult, grad_inv_lm,
-        sens_mat,
+        InversionResult, 
+        grad_inv_lm, sens_mat,
         # Signal Processing
         LsFitResult, 
         periodic_ls_fit, sig_len_unc,

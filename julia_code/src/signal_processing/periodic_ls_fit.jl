@@ -1,3 +1,15 @@
+# periodic_ls_fit.jl
+# Least-squares fitting of periodic signals to extract phasor coefficients.
+# Constructs a design matrix of sinusoids at specified periods, solves for
+# optimal coefficients, and returns complex phasor representations along
+# with the data covariance matrix for use in weighted inversion.
+
+struct LsFitResult
+    data_cov :: Matrix{Float64}
+    phasors  :: Vector{ComplexF64}
+    mse      :: Float64
+end
+
 function periodic_ls_fit(times::Vector{Float64}, sig::Vector{Float64}, periods::Vector{Float64})
 
     length(sig) == length(times) || error("Length of sig must match length of times")

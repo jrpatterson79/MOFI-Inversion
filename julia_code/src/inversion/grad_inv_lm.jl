@@ -24,6 +24,14 @@ Non-linear gradient inversion using the Levenberg-Marquardt algorithm.
 
 using Optim
 
+struct InversionResult
+    s_curr     :: Vector{Float64}
+    s_update   :: Matrix{Float64}
+    model_err  :: Float64
+    flag       :: Int
+end
+
+
 function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
 
     # Convergence criteria
@@ -34,7 +42,7 @@ function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
 
     # Initialise
     s_curr    = copy(s)
-    λ    = float(λ_init)
+    λ         = float(λ_init)
     iter      = 0
     num_param = length(s_curr)
 
@@ -69,8 +77,9 @@ function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
 
         # Convergence check
         if obj_change <= obj_close && s_change <= s_close
+            model_err = obj_func(s_curr)
             out_flag = 1
-            return s_curr, s_update[1:iter, :], out_flag
+            return InversionResult(s_curr, s_update[1:iter, :], model_err, out_flag)
         end
 
         # Store current iterate
@@ -92,5 +101,5 @@ function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
     model_err = obj_func(s_curr)
     out_flag  = 0
     @warn "grad_inv_lm: maximum iterations ($max_iter) exceeded"
-    return s_curr, s_update[1:iter, :], model_err, out_flag
+    return InversionResult(s_curr, s_update[1:iter, :], model_err, out_flag)
 end
