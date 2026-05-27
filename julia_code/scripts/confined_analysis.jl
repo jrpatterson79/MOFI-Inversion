@@ -118,7 +118,7 @@ for w in 1:num_cases
 
     # ── LM inversion ─────────────────────────────────────────────────────────
     obj_func    = make_obj(fwd_func, y_noise, R_inv)
-    inv_result  = grad_inv_lm(y_noise, s_init, fwd_func, obj_func, R_inv, λ, δ)
+    inv_result  = grad_inv_lm(y_noise, s_init, fwd_func, obj_func, λ, δ)
     s_opt[w]    = inv_result.s_curr
     s_step[w]   = inv_result.s_update
 
@@ -145,7 +145,7 @@ for w in 1:num_cases
     # ── Signal length uncertainty — data error sensitivity ────────────────────
     data_err_sens = 5e-3              # 5 mm noise
     sig_unc_data  = sig_len_unc(test_list, phasor_mat, [T_true - 1.0, S_true - 1.0],
-                                dt, t_max, data_err_sens, λ, δ, fwd_func, obj_func, model)
+                                dt, t_max, data_err_sens, λ, δ, fwd_func, obj_func)
     time_data_sens[w]  = sig_unc_data.t_save
     T_unc_data_sens[w] = sig_unc_data.param_stddev[:, 1]
     S_unc_data_sens[w] = sig_unc_data.param_stddev[:, 2]

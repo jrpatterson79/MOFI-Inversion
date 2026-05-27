@@ -7,17 +7,18 @@ using Distributions: Chisq, quantile
 
 # Linearized uncertainty calculation
 """
-    param_uncertainty(J, R_inv, s_opt) -> UncertaintyResult
+    param_uncertainty(s_opt, δ, fwd_func, R_inv) -> UncertaintyResult
 
 Compute linearized parameter uncertainty from the Jacobian and inverse
 data covariance matrix.
 
 # Arguments
-- `J`:     (num_data x num_params) Jacobian matrix at s_opt
-- `R_inv`: (num_data x num_data) inverse data error covariance matrix
-- `s_opt`: (num_params,) optimal parameter vector (log-space)
+- `s_opt`:    (num_params,) optimal parameter vector (log-space)
+- `δ`:        (num_params,) finite difference perturbations for Jacobian
+- `fwd_func`: forward model closure with signature f(s) -> Vector{Float64}
+- `R_inv`:    (num_data x num_data) inverse data error covariance matrix
 
-# Returns 
+# Returns
 UncertaintyResult structure
 - `param_cov`: (num_params x num_params) parameter covariance matrix
 - `param_sd`:  (num_params,) 95% confidence parameter standard deviations
@@ -41,7 +42,7 @@ function param_uncertainty(
     param_sd  = 1.96 .* sqrt.(diag(param_cov))
     param_CI  = [s_opt .- param_sd  s_opt .+ param_sd]
 
-    return UncertaintyResult(param_cov, param_sd, param_CI, region)
+    return UncertaintyResult(param_cov, param_sd, param_CI)
 end
 
 # Error ellipse calculation
@@ -55,7 +56,6 @@ surface at the 95% confidence level.
 # Arguments
 - `param_cov`: (num_params x num_params) parameter covariance matrix
 - `s_opt`:     (num_params,) optimal parameter vector (log-space)
-- `model`:     `ConfinedAquifer()` or `LeakyAquifer()`
 """
 
 struct ConfidenceRegion
@@ -65,8 +65,7 @@ end
 
 function confidence_region(
     param_cov :: Matrix{Float64},
-    s_opt     :: Vector{Float64},
-    model     :: AquiferModel
+    s_opt     :: Vector{Float64}
 )
     num_params = length(s_opt)
 
@@ -91,19 +90,26 @@ end
 
 # ── Unit surface generation ───────────────────────────────────────────────────
 
-function _unit_surface(::ConfinedAquifer)
-    θ = range(0, 2π, length=500)
-    return [cos.(θ) sin.(θ)]                # (500 × 2)
-end
+function _unit_surface(param_cov::Matrix{Float64})
+    n = size(param_cov, 1)
 
-function _unit_surface(::LeakyAquifer)
-    n = 100
-    θ = range(0,  π, length=n)
-    φ = range(0, 2π, length=n)
-    Θ = repeat(θ,  1, n)
-    Φ = repeat(φ', n, 1)
-    x = vec(sin.(Θ) .* cos.(Φ))
-    y = vec(sin.(Θ) .* sin.(Φ))
-    z = vec(cos.(Θ))
-    return [x y z]                          # (n² × 3)
+    # Confined uncertainty ellipse
+    if n == 2
+        θ = range(0, 2π, length=500)
+        return [cos.(θ) sin.(θ)]
+    
+    # Leaky uncertainty ellipse
+    elseif n == 3
+        n = 100
+        θ = range(0,  π, length=n)
+        φ = range(0, 2π, length=n)
+        Θ = repeat(θ,  1, n)
+        Φ = repeat(φ', n, 1)
+        x = vec(sin.(Θ) .* cos.(Φ))
+        y = vec(sin.(Θ) .* sin.(Φ))
+        z = vec(cos.(Θ))
+        return [x y z]
+    else
+        error("_unit_surface: unsupported dimensionality $n")
+    end
 end

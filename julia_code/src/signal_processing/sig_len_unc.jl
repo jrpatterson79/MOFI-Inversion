@@ -6,7 +6,7 @@
 
 """
     sig_len_unc(test_list, y, s_init, dt, t_max, data_err, λ, δ,
-                fwd_func, obj_func, model) -> SigLenUncResult
+                fwd_func, obj_func) -> SigLenUncResult
 
 Evaluate parameter uncertainty as a function of total oscillatory test duration.
 
@@ -26,7 +26,6 @@ is reached.
 - `δ`:          (num_params,) finite difference perturbations for Jacobian
 - `fwd_func`:   forward model closure with signature f(s) -> Vector{Float64}
 - `obj_func`:   objective function closure with signature f(s) -> Float64
-- `model`:      `ConfinedAquifer()` or `LeakyAquifer()`
 
 # Returns
 `SigLenUncResult` with fields:
@@ -52,8 +51,7 @@ function sig_len_unc(
     λ         :: Float64,
     δ         :: Vector{Float64},
     fwd_func  :: Function,
-    obj_func  :: Function,
-    model     :: AquiferModel
+    obj_func  :: Function
 )
 
     num_obs       = size(test_list, 1)
