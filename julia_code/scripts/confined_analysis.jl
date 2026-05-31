@@ -12,6 +12,7 @@ using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
 
 using MofiInversion
+using LinearAlgebra
 using CairoMakie
 using Random
 
@@ -19,6 +20,7 @@ using Random
 Random.seed!(0)
 
 # ── Aquifer model ─────────────────────────────────────────────────────────────
+# Aquifer types: ConfinedAquifer() and LeakyAquifer()
 model = ConfinedAquifer()
 
 # ── Helper Functions ──────────────────────────────────────────────────────────
@@ -62,7 +64,7 @@ Pv = [
 # ── Storage arrays ────────────────────────────────────────────────────────────
 num_cases    = length(Pv)
 s_opt        = Vector{Vector{Float64}}(undef, num_cases)
-s_step       = Vector{Vector{Float64}}(undef, num_cases)
+s_step       = Vector{Matrix{Float64}}(undef, num_cases)
 err_ell      = Vector{Matrix{Float64}}(undef, num_cases)
 mod_err      = Vector{Matrix{Float64}}(undef, num_cases)
 time_tot     = Vector{Vector{Float64}}(undef, num_cases)
@@ -103,7 +105,7 @@ for w in 1:num_cases
     for i in 1:num_obs
         t         = collect(0.0 : dt : 5.0 * test_list[i, 1])
         signal    = (y_true[i] .* cos.(test_list[i, 2] .* t)) .+
-                   (-y_true[num_obs+i] .* sin.(test_list[i, 2] .* t))
+                    (-y_true[num_obs+i] .* sin.(test_list[i, 2] .* t))
         sig_noise = signal .+ data_err .* randn(length(t))
         fit       = periodic_ls_fit(t, sig_noise, [test_list[i, 1]])
         data_covs[i] = fit.data_cov
@@ -114,7 +116,7 @@ for w in 1:num_cases
     y_noise                          = zeros(Float64, 2 * num_obs)
     y_noise[1:num_obs]               = real.(phasors)
     y_noise[num_obs+1:2*num_obs]     = imag.(phasors)
-    R_inv                            = inv(blockdiag(data_covs...))
+    R_inv                            = build_R_inv(data_covs)
 
     # ── LM inversion ─────────────────────────────────────────────────────────
     obj_func    = make_obj(fwd_func, y_noise, R_inv)
@@ -122,11 +124,11 @@ for w in 1:num_cases
     s_opt[w]    = inv_result.s_curr
     s_step[w]   = inv_result.s_update
 
-    println("w=$w  lnT=$(round(s_opt[w][1], digits=3))  lnS=$(round(s_opt[w][2], digits=3))  converged=$(inv_result.converged)")
+    println("w=$w  lnT=$(round(s_opt[w][1], digits=2))  lnS=$(round(s_opt[w][2], digits=2))  converged=$(inv_result.flag)")
 
     # ── Linearized uncertainty analysis ───────────────────────────────────────
     unc          = param_uncertainty(s_opt[w], δ, fwd_func, R_inv)
-    region       = confidence_region(unc.param_cov, s_opt[w], model)
+    region       = confidence_region(unc.param_cov, s_opt[w])
     err_ell[w]   = region.points
 
     # ── Parameter space grid search ───────────────────────────────────────────
@@ -137,7 +139,7 @@ for w in 1:num_cases
     phasor_mat = [real.(phasors) imag.(phasors)]
 
     sig_unc  = sig_len_unc(test_list, phasor_mat, [T_true - 1.0, S_true - 1.0],
-                            dt, t_max, data_err, λ, δ, fwd_func, obj_func, model)
+                            dt, t_max, data_err, λ, δ, fwd_func)
     time_tot[w]  = sig_unc.t_save
     T_stddev[w]  = sig_unc.param_stddev[:, 1]
     S_stddev[w]  = sig_unc.param_stddev[:, 2]
@@ -145,7 +147,7 @@ for w in 1:num_cases
     # ── Signal length uncertainty — data error sensitivity ────────────────────
     data_err_sens = 5e-3              # 5 mm noise
     sig_unc_data  = sig_len_unc(test_list, phasor_mat, [T_true - 1.0, S_true - 1.0],
-                                dt, t_max, data_err_sens, λ, δ, fwd_func, obj_func)
+                                dt, t_max, data_err_sens, λ, δ, fwd_func)
     time_data_sens[w]  = sig_unc_data.t_save
     T_unc_data_sens[w] = sig_unc_data.param_stddev[:, 1]
     S_unc_data_sens[w] = sig_unc_data.param_stddev[:, 2]
@@ -153,7 +155,7 @@ for w in 1:num_cases
     # ── Signal length uncertainty — temporal sampling sensitivity ─────────────
     dt_sens      = 1/125
     sig_unc_dt   = sig_len_unc(test_list, phasor_mat, [T_true - 1.0, S_true - 1.0],
-                                dt_sens, t_max, data_err, λ, δ, fwd_func, obj_func, model)
+                                dt_sens, t_max, data_err, λ, δ, fwd_func)
     time_dt_sens[w]  = sig_unc_dt.t_save
     T_unc_dt_sens[w] = sig_unc_dt.param_stddev[:, 1]
     S_unc_dt_sens[w] = sig_unc_dt.param_stddev[:, 2]
@@ -165,17 +167,18 @@ for w in 1:num_cases
         test_list_r[j, :] = [P[j], ω[j], Q_max, r_sens]
     end
 
-    fwd_func_r   = make_fwd(test_list_r)
-    y_sens       = fwd_func_r([T_true, S_true])
-    obj_func    = make_obj(fwd_func_r, y_sens, R_inv)
+    fwd_func_r     = make_fwd(test_list_r)
+    y_r_sens       = fwd_func_r([T_true, S_true])
+    phasor_r_sens  = [y_r_sens[1:num_obs] y_r_sens[num_obs+1:end]]
 
-    sig_unc_r    = sig_len_unc(test_list_r, phasor_sens, [T_true - 1.0, S_true - 1.0],
-                                dt, t_max, data_err, λ, δ, fwd_func_r, obj_func_r, model)
+    sig_unc_r      = sig_len_unc(test_list_r, phasor_r_sens, [T_true - 1.0, S_true - 1.0], dt, t_max, data_err, λ, δ, fwd_func_r)
+
     time_r_sens[w]  = sig_unc_r.t_save
     T_unc_r_sens[w] = sig_unc_r.param_stddev[:, 1]
     S_unc_r_sens[w] = sig_unc_r.param_stddev[:, 2]
 
 end # end main loop
+w = num_cases
 
 # ── Plot styling ──────────────────────────────────────────────────────────────
 colors = [
@@ -191,23 +194,19 @@ labels  = ["P = 30 s", "P = 90 s", "P = 180 s",
            "P = 30 s & 90 s", "P = 30 s & 180 s", "P = 30 s, 90 s, & 180 s"]
 
 # ── Gradient path figure ──────────────────────────────────────────────────────
-# Uses last w iteration — rerun inversion for last case to recover s_step
 fig = Figure(resolution = (800, 600))
 ax  = Axis(fig[1, 1],
             xlabel = "ln(T [m²/s])", ylabel = "ln(S [-])",
             titlesize = 18, xlabelsize = 18, ylabelsize = 18)
 contour!(ax, T_vec, S_vec, log10.(mod_err[w])', levels = 20, linewidth = 2)
-lines!(ax, s_step[:, 1], s_step[:, 2],
-        color = :black, linewidth = 2,
-        label = "Gradient Step")
-scatter!(ax, s_step[:, 1], s_step[:, 2],
-            marker = :utriangle, markersize = 10,
-            color = colors[2], strokecolor = :black, strokewidth = 1)
+scatterlines!(ax, s_step[w][:, 1], s_step[w][:, 2],
+              marker = :utriangle, markersize = 10,
+              color = colors[2], strokecolor = :black, strokewidth = 1,
+              label = "Gradient Path")
 xlims!(ax, -15, -4)
 ylims!(ax, -15, -8)
 axislegend(ax, fontsize = 18)
-Colorbar(fig[1, 2], limits = (0, 14), label = "log₁₀(Data Misfit)",
-            labelsize = 18, ticksize = 18)
+Colorbar(fig[1, 2], limits = (0, 14), colormap = :viridis, label = "log₁₀(Data Misfit)", labelsize = 18, ticksize = 18)
 display(fig)
 
 # ── Parameter space + confidence ellipse (last case, zoomed) ─────────────────

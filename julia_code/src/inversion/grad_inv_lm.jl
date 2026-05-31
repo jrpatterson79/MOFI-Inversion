@@ -1,29 +1,25 @@
-"""
-    grad_inv_lm(y, s, fwd_model_func, R_inv, λ_init, δ)
+#grad_inv_lm.jl
+# Gradient-based Levenberg-Marquardt algorithm that minimizes the misfit between measured modeled values.
 
-Non-linear gradient inversion using the Levenberg-Marquardt algorithm.
-# Arguments
-- `y`              : (2*num_obs,) vector of phasor coefficients (calibration data)
-- `s`              : (num_param,) vector of initial parameter guesses [ln(T); ln(S); ...]
-- `fwd_model_func` : forward model function handle, s -> y_mod
-- `R_inv`          : (2*num_obs x 2*num_obs) inverse data-error covariance matrix
-- `λ_init`    : initial LM regularization parameter
-- `δ`          : (num_param,) perturbation vector for Jacobian finite differences
+# Developed by: Jeremy Patterson
+# Created: May 2026 
 
-# Keyword Arguments
-- `max_iter`  : maximum number of iterations (default: 75)
-- `obj_close` : relative objective function change convergence tolerance (default: 1e-6)
-- `s_close`   : relative parameter change convergence tolerance (default: 1e-6)
+# The code is provided as open source under the GNU General Public License v3.0. It is provided without warranty, but should perform as described in the manuscript when executed without modification.
 
-# Returns
-- `s_hat`     : optimal parameter vector
-- `s_update`  : (iter x num_param) matrix of parameter iterates
-- `model_err` : final objective function value (only when max iterations reached)
-- `out_flag`  : 1 = converged, 0 = max iterations exceeded
-"""
-
+using LinearAlgebra
 using Optim
 
+"""
+    InversionResult
+
+Result structure for Levenberg-Marquardt inversion.
+
+# Fields
+- `s_curr`:    (num_params,) optimal parameter vector (log-space)
+- `s_update`:  (num_iter x num_params) parameter iterates at each step
+- `model_err`: final objective function value
+- `flag`:      convergence flag — 1 = converged, 0 = max iterations exceeded
+"""
 struct InversionResult
     s_curr     :: Vector{Float64}
     s_update   :: Matrix{Float64}
@@ -31,7 +27,27 @@ struct InversionResult
     flag       :: Int
 end
 
+"""
+    grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ) -> InversionResult
 
+Non-linear gradient inversion using the Levenberg-Marquardt algorithm.
+
+# Arguments
+- `y`:             (2*num_obs,) vector of phasor coefficients (calibration data)
+- `s`:             (num_params,) initial parameter guess (log-space)
+- `fwd_model_func`: forward model closure with signature f(s) -> Vector{Float64}
+- `obj_func`:      objective function closure with signature f(s) -> Float64
+- `λ_init`:        initial LM regularization parameter
+- `δ`:             (num_params,) finite difference perturbations for Jacobian
+
+# Keyword Arguments
+- `max_iter`:  maximum number of iterations (default: 75)
+- `obj_close`: relative objective function change convergence tolerance (default: 1e-6)
+- `s_close`:   relative parameter change convergence tolerance (default: 1e-6)
+
+# Returns
+`InversionResult` with fields `s_curr`, `s_update`, `model_err`, `flag`
+"""
 function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
 
     # Convergence criteria
@@ -61,8 +77,8 @@ function grad_inv_lm(y, s, fwd_model_func, obj_func, λ_init, δ)
 
         # Line search along LM step direction
         step_obj  = alpha -> obj_func(s_curr .+ alpha .* step)
-        result    = Optim.optimize(step_obj, 0.5; iterations = max_linevals)
-        alpha_best = Optim.minimizer(result)
+        result     = Optim.optimize(step_obj, [0.5], NelderMead())
+        alpha_best = Optim.minimizer(result)[1]
 
         # Candidate update
         s_new    = s_curr .+ alpha_best .* step

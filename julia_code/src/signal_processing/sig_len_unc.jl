@@ -4,6 +4,31 @@
 # test duration by incrementally increasing signal length and repeating
 # inversion and linearized uncertainty analysis at each step.
 
+# Developed by: Jeremy Patterson
+# Created: May 2026 
+
+# The code is provided as open source under the GNU General Public License v3.0. It is provided without warranty, but should perform as described in the manuscript when executed without modification.
+
+using LinearAlgebra
+using SparseArrays:blockdiag, sparse
+
+"""
+    SigLenUncResult
+
+Result structure for signal length uncertainty analysis.
+
+# Fields
+- `t_save`:       (num_iter,) cumulative test time at each signal length [s]
+- `param_stddev`: (num_iter x num_params) 95% parameter standard deviations
+                  columns ordered as [T, S] for confined, [T, S, L] for leaky
+- `s_hat`:        (num_iter x num_params) optimal parameters at each signal length
+"""
+struct SigLenUncResult
+    t_save       :: Vector{Float64}
+    param_stddev :: Matrix{Float64}
+    s_hat        :: Matrix{Float64}
+end
+
 """
     sig_len_unc(test_list, y, s_init, dt, t_max, data_err, λ, δ,
                 fwd_func, obj_func) -> SigLenUncResult
@@ -28,18 +53,9 @@ is reached.
 - `obj_func`:   objective function closure with signature f(s) -> Float64
 
 # Returns
-`SigLenUncResult` with fields:
-- `t_save`:      (num_iter,) cumulative test time at each signal length [s]
-- `param_stddev`: (num_iter x num_params) 95% parameter standard deviations
-                   columns ordered as [T, S] for confined, [T, S, L] for leaky
-- `s_hat`:       (num_iter x num_params) optimal parameters at each signal length
+`SigLenUncResult` with fields `t_save`, `param_stddev`, and `s_hat`
 """
-
-struct SigLenUncResult
-    t_save       :: Vector{Float64}
-    param_stddev :: Matrix{Float64}
-    s_hat        :: Matrix{Float64}
-end
+build_R_inv(data_covs::Vector{Matrix{Float64}}) = inv(Matrix(blockdiag(sparse.(data_covs)...))) 
 
 function sig_len_unc(
     test_list :: Matrix{Float64},
@@ -50,8 +66,7 @@ function sig_len_unc(
     data_err  :: Float64,
     λ         :: Float64,
     δ         :: Vector{Float64},
-    fwd_func  :: Function,
-    obj_func  :: Function
+    fwd_func  :: Function
 )
 
     num_obs       = size(test_list, 1)
@@ -89,18 +104,22 @@ function sig_len_unc(
         end
 
         # Build block-diagonal inverse data covariance matrix
-        R_inv = inv(blockdiag(data_covs...))
+        R_inv = build_R_inv(data_covs)
 
         # Pack noisy phasor coefficients into data vector (block layout)
         y_noise                      = zeros(Float64, 2 * num_obs)
         y_noise[1:num_obs]           = real.(phasors)
         y_noise[num_obs+1:2*num_obs] = imag.(phasors)
 
+        # Define objective function
+        obj_func = s -> 0.5 * dot(y_noise - fwd_func(s), R_inv * (y_noise - fwd_func(s)))
+
         # LM inversion
-        s_hat, _, _ = grad_inv_lm(y_noise, s_init, fwd_func, obj_func, R_inv, λ, δ)
+        inv_result = grad_inv_lm(y_noise, s_init, fwd_func, obj_func, λ, δ)
+        s_hat = inv_result.s_curr
 
         # Linearized uncertainty analysis
-        unc = param_uncertainty(s_hat, δ, fwd_func, R_inv, model)
+        unc = param_uncertainty(s_hat, δ, fwd_func, R_inv)
 
         # Accumulate results
         push!(t_save,       t_curr)
