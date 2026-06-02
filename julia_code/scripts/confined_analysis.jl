@@ -30,10 +30,9 @@ make_obj(fwd_func, y, R_inv) = s -> 0.5 * dot(y - fwd_func(s), R_inv * (y - fwd_
 # ── Aquifer geometry ──────────────────────────────────────────────────────────
 r = 10.0                    # radial distance [m]
 
-# ── True aquifer parameters (log-space) ───────────────────────────────────────
-D_true = 2.0
-T_true = -8.0
-S_true = T_true - D_true
+# ── True aquifer parameters (ln-space) ───────────────────────────────────────
+T_true = -8.0   
+S_true = -10.0
 
 # ── Pumping parameters ────────────────────────────────────────────────────────
 Q_max = 7e-5                # max pumping rate [m³/s]
@@ -194,7 +193,7 @@ labels  = ["P = 30 s", "P = 90 s", "P = 180 s",
            "P = 30 s & 90 s", "P = 30 s & 180 s", "P = 30 s, 90 s, & 180 s"]
 
 # ── Gradient path figure ──────────────────────────────────────────────────────
-fig = Figure(resolution = (800, 600))
+fig = Figure(size = (800, 600))
 ax  = Axis(fig[1, 1],
             xlabel = "ln(T [m²/s])", ylabel = "ln(S [-])",
             titlesize = 18, xlabelsize = 18, ylabelsize = 18)
@@ -210,7 +209,7 @@ Colorbar(fig[1, 2], limits = (0, 14), colormap = :viridis, label = "log₁₀(Da
 display(fig)
 
 # ── Parameter space + confidence ellipse (last case, zoomed) ─────────────────
-fig = Figure(resolution = (800, 600))
+fig = Figure(size = (800, 600))
 ax  = Axis(fig[1, 1],
             xlabel = "ln(T [m²/s])", ylabel = "ln(S [-])",
             xlabelsize = 18, ylabelsize = 18)
@@ -232,7 +231,7 @@ axislegend(ax, fontsize = 18)
 display(fig)
 
 # ── Figure 2 — uncertainty vs signal length, all period sets ─────────────────
-fig = Figure(resolution = (1900, 600))
+fig = Figure(size = (1900, 600))
 ax1 = Axis(fig[1, 1], xlabel = "Time (min)", ylabel = "σ ln(T [m²/s])",
             xlabelsize = 18, ylabelsize = 18)
 ax2 = Axis(fig[1, 2], xlabel = "Time (min)", ylabel = "σ ln(S [-])",
@@ -271,7 +270,7 @@ let
     T_sens_data = [T_stddev[w], T_unc_data_sens[w], T_unc_dt_sens[w], T_unc_r_sens[w]]
     S_sens_data = [S_stddev[w], S_unc_data_sens[w], S_unc_dt_sens[w], S_unc_r_sens[w]]
 
-    fig = Figure(resolution = (1900, 600))
+    fig = Figure(size = (1900, 600))
     ax1 = Axis(fig[1, 1], xlabel = "Time (min)", ylabel = "σ ln(T [m²/s])",
                xlabelsize = 18, ylabelsize = 18)
     ax2 = Axis(fig[1, 2], xlabel = "Time (min)", ylabel = "σ ln(S [-])",
@@ -298,7 +297,7 @@ end
 
 # ── Figures 4 & 5 — parameter space + ellipse, single and multi-freq ─────────
 for (fig_cases, fig_num) in [((1:3), 4), ((4:6), 5)]
-    fig = Figure(resolution = (1900, 900))
+    fig = Figure(size = (1900, 900))
     for (col_idx, f) in enumerate(fig_cases)
         # Full parameter space
         ax_top = Axis(fig[1, col_idx],
@@ -349,7 +348,7 @@ for i in 1:num_cases
     T_ylim = i == 1 ? maximum(T_unc_r_sens[i]) : 0.15
     S_ylim = i == 1 ? maximum(S_unc_r_sens[i]) : 0.15
 
-    fig = Figure(resolution = (1900, 600))
+    fig = Figure(size = (1900, 600))
     ax1 = Axis(fig[1, 1], xlabel = "Time (min)", ylabel = "σ ln(T [m²/s])",
                xlabelsize = 18, ylabelsize = 18)
     ax2 = Axis(fig[1, 2], xlabel = "Time (min)", ylabel = "σ ln(S [-])",
