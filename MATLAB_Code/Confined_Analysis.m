@@ -127,7 +127,6 @@ end
 mod_err{w} = mod_norm;
 
 %% Sensitivity Analysis
-
 % Uncertainty vs signal length
 t_max = 60*60; % Total test time in seconds
 [time_tot{w}, T_stddev{w}, S_stddev{w}] = SigLenUnc(synth_data, phasor, [T_true-1; S_true-1], dt, t_max, data_err, lambda, delta, soln);
